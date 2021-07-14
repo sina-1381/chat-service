@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"github.com/go-redis/cache"
 	"github.com/go-redis/redis"
+	"os"
 	"time"
 )
 
 func CacheRun(key string , value interface{}){
 	ring := redis.NewRing(&redis.RingOptions{
 		Addrs: map[string]string{
-			"server": ":6379",
+			"server": os.Getenv("CACHE_PORT"),
 		},
 	})
 	mycache := cache.New(&cache.Options{

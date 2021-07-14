@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/smtp"
+	"os"
 )
 
 type smtpServer struct {
@@ -23,10 +24,10 @@ func (s *smtpServer) Address() string {
 }
 
 func (s *SetEmail)SendEmail() {
-	from := "sina.darestany@gmail.com"
-	password := "siNadarestaNy1381"
+	from := os.Getenv("EMAIL_FROM")
+	password := os.Getenv("EMAIL_PASS")
 	to := s.To
-	smtpServer := smtpServer{host: "smtp.gmail.com", port: "587"}
+	smtpServer := smtpServer{host: os.Getenv("EMAIL_SERVER_HOST"), port: os.Getenv("EMAIL_SERVER_PORT")}
 	mime := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
 	msg := []byte(
 		"Subject: "+s.Subject+"!\n" +

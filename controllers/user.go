@@ -12,8 +12,6 @@ import (
 	"net/http"
 )
 
-
-
 func Register(c *gin.Context) {
 	var model models.User
 	var userResponse models.UserResponse

@@ -3,14 +3,23 @@ package main
 import (
 	"ginGorm/models"
 	"ginGorm/validations"
+	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator"
+	"github.com/joho/godotenv"
 	"github.com/kamva/mgm"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"os"
 )
 
 func init()  {
-	err := mgm.SetDefaultConfig(&mgm.Config{CtxTimeout: 12} , "Message" , options.Client().ApplyURI("mongodb://root:root@localhost:27017"))
+	godotenv.Load(".env")
+	gin.SetMode(os.Getenv("GIN_MODE"))
+
+	err := mgm.SetDefaultConfig(nil , os.Getenv("MONGO_DBNAME") , options.Client().
+		ApplyURI("mongodb://"+os.Getenv("MONGO_USER")+":"+os.Getenv("MONGO_PASS")+"@"+
+			os.Getenv("MONGO_HOST")+":"+os.Getenv("MONGO_PORT")))
+
 	if err != nil{
 		panic(err)
 	}

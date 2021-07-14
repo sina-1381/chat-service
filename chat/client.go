@@ -56,8 +56,8 @@ func (c *Client)Read() {
 		c.Hub.Broadcast <- message
 		if message.Type == "privet" {
 			go func() {
-				message := mongo.NewMessage(message.Msg, message.To, message.From.(string), message.Type, "send")
-				err := mgm.Coll(message).Create(message)
+				messages := mongo.NewMessage(message.Msg, message.To, message.From.(string), message.Type, "send")
+				err := mgm.Coll(messages).Create(messages)
 				if err != nil {
 					panic(err)
 				}
