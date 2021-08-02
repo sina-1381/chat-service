@@ -1,7 +1,7 @@
 package validations
 
 type Login struct {
-	Email string `json:"email" binding:"required,email"`
+	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required,min=6"`
 }
 
@@ -19,12 +19,12 @@ type ResetPassword struct {
 }
 
 type VerifyPassword struct {
-	Token string `json:"token" binding:"required,min=32,max=32"`
+	Token    string `json:"token" binding:"required,min=32,max=32"`
 	Password string `json:"password" binding:"required,min=6"`
 }
 
 type FcmModel struct {
-	Title string `json:"title" binding:"required"`
-	Msg string `json:"msg" binding:"required"`
+	Title   string   `json:"title" binding:"required"`
+	Msg     string   `json:"msg" binding:"required"`
 	UserIDs []string `json:"uid" binding:"required"`
 }

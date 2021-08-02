@@ -16,7 +16,7 @@ var upgrader = websocket.Upgrader{
 	ReadBufferSize:    1024,
 	WriteBufferSize:   1024,
 	Subprotocols:      []string{"tcp"},
-	CheckOrigin: func(r *http.Request) bool {return true},
+	CheckOrigin:       func(r *http.Request) bool { return true },
 	EnableCompression: true,
 }
 
@@ -25,21 +25,21 @@ var (
 	space   = []byte{' '}
 )
 
-func Runner(se *Session , c *gin.Context)  {
+func Runner(se *Session, c *gin.Context) {
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 	from := c.MustGet("user").(jwt.MapClaims)["User"].(map[string]interface{})["username"]
-	client := &Client{Hub: se, Conn: conn, Send: make(chan *Message),From: from}
+	client := &Client{Hub: se, Conn: conn, Send: make(chan *Message), From: from}
 	client.Hub.Register <- client
 
 	go client.Write()
 	go client.Read()
 }
 
-func (c *Client)Read() {
+func (c *Client) Read() {
 	defer func() {
 		c.Hub.UnRegister <- c
 	}()
@@ -62,25 +62,25 @@ func (c *Client)Read() {
 					panic(err)
 				}
 			}()
-		}else if message.Type == "group"{
+		} else if message.Type == "group" {
 			go func() {
 				var username []string
 				models.DB.Table("group_chats").Select("users.user_name").Where("group_chats.title = ?", message.To).
 					Joins("left join user_groups on group_chats.id = user_groups.group_chat_id").
 					Joins("left join users on user_groups.user_id = users.id").Find(&username)
-				GroupMessage := mongo.NewGroupMessage(message.Msg , message.To , "send", message.From.(string) , message.Type ,username)
+				GroupMessage := mongo.NewGroupMessage(message.Msg, message.To, "send", message.From.(string), message.Type, username)
 				err := mgm.Coll(GroupMessage).Create(GroupMessage)
 				if err != nil {
 					panic(err)
 				}
 			}()
-		}else {
+		} else {
 			panic("wrong type !!!")
 		}
 	}
 }
 
-func (c *Client)Write() {
+func (c *Client) Write() {
 	defer func() {
 		c.Conn.Close()
 	}()

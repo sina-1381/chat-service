@@ -12,22 +12,24 @@ import (
 	"os"
 )
 
-func init()  {
-	godotenv.Load(".env")
+func init() {
+	err := godotenv.Load(".env")
+	if err != nil {
+		panic(err)
+	}
 	gin.SetMode(os.Getenv("GIN_MODE"))
 
-	err := mgm.SetDefaultConfig(nil , os.Getenv("MONGO_DBNAME") , options.Client().
+	err = mgm.SetDefaultConfig(nil, os.Getenv("MONGO_DBNAME"), options.Client().
 		ApplyURI("mongodb://"+os.Getenv("MONGO_USER")+":"+os.Getenv("MONGO_PASS")+"@"+
 			os.Getenv("MONGO_HOST")+":"+os.Getenv("MONGO_PORT")))
-
-	if err != nil{
+	if err != nil {
 		panic(err)
 	}
 	models.ConnectDataBase()
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		err := v.RegisterValidation("uniq", validations.Uniq)
 		err = v.RegisterValidation("exists", validations.Exists)
-		if err != nil{
+		if err != nil {
 			panic(err)
 		}
 	}

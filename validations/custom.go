@@ -12,24 +12,24 @@ import (
 
 var Uniq validator.Func = func(fl validator.FieldLevel) bool {
 	date := fl.Field().Interface()
-	keyParam:= strings.Split(fl.Param(),".")
+	keyParam := strings.Split(fl.Param(), ".")
 	var count int64
 	models.DB.Table(keyParam[0]).Select("id").Where(keyParam[1]+" = ?", date).Count(&count)
-	if count != 0{
+	if count != 0 {
 		return false
-	}else {
+	} else {
 		return true
 	}
 }
 
 var Exists validator.Func = func(fl validator.FieldLevel) bool {
 	date := fl.Field().Interface()
-	keyParam:= strings.Split(fl.Param(),".")
+	keyParam := strings.Split(fl.Param(), ".")
 	var count int64
 	models.DB.Table(keyParam[0]).Select("id").Where(keyParam[1]+" = ?", date).Count(&count)
-	if count != 0{
+	if count != 0 {
 		return true
-	}else {
+	} else {
 		return false
 	}
 }
