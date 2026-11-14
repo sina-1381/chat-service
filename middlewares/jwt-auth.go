@@ -1,11 +1,12 @@
 package middlewares
 
 import (
-	"ginGorm/services"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/gin-gonic/gin"
+	"chat-service/services"
 	"log"
 	"net/http"
+
+	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
 )
 
 func AuthorizeJWT() gin.HandlerFunc {

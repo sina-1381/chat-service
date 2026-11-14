@@ -1,14 +1,15 @@
 package controllers
 
 import (
-	"ginGorm/models"
-	"ginGorm/mongo"
-	"ginGorm/validations"
+	"chat-service/models"
+	"chat-service/mongo"
+	"chat-service/validations"
+	"net/http"
+
+	"github.com/Kamva/mgm"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"github.com/kamva/mgm"
 	"go.mongodb.org/mongo-driver/bson"
-	"net/http"
 )
 
 func UpdateStatus(c *gin.Context) {
@@ -53,13 +54,11 @@ func CreateGroup(c *gin.Context) {
 func AddUser(c *gin.Context) {
 	var input models.AddUser
 	var group models.GroupChat
-	var id int
 	validations.CheckValidate(&input, c)
-	models.DB.Table("users").Select("id").Where("user_name = ?", input.UserIDs).Find(&id)
-	models.DB.Table("user_groups").Where("title = ?", input.GroupTitle).First(&group)
+	models.DB.Table("group_chats").Where("title = ?", input.GroupTitle).First(&group)
 	data := models.UserGroups{
 		GroupChatID: group.ID,
-		UserID:      id,
+		UserID:      input.UserIDs,
 	}
 	models.DB.Table("user_groups").Create(&data)
 	c.JSON(http.StatusOK, map[string]string{

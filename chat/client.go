@@ -1,15 +1,16 @@
 package chat
 
 import (
-	"ginGorm/models"
-	"ginGorm/mongo"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
-	"github.com/kamva/mgm"
+	"chat-service/models"
+	"chat-service/mongo"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/Kamva/mgm"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 )
 
 var upgrader = websocket.Upgrader{
@@ -19,11 +20,6 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin:       func(r *http.Request) bool { return true },
 	EnableCompression: true,
 }
-
-var (
-	newline = []byte{'\n'}
-	space   = []byte{' '}
-)
 
 func Runner(se *Session, c *gin.Context) {
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
@@ -84,19 +80,13 @@ func (c *Client) Write() {
 	defer func() {
 		c.Conn.Close()
 	}()
-	for {
-		select {
-		case message, ok := <-c.Send:
-			c.Conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
-			if !ok {
-
-				c.Conn.WriteMessage(websocket.CloseMessage, []byte{})
-				return
-			}
-			err := c.Conn.WriteJSON(message)
-			if err != nil {
-				return
-			}
+	for message := range c.Send {
+		c.Conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+		err := c.Conn.WriteJSON(message)
+		if err != nil {
+			return
 		}
 	}
+
+	c.Conn.WriteMessage(websocket.CloseMessage, []byte{})
 }

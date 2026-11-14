@@ -1,11 +1,12 @@
 package services
 
 import (
+	"chat-service/models"
 	"fmt"
-	"ginGorm/models"
-	"github.com/dgrijalva/jwt-go"
 	"os"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
 )
 
 type JWTService interface {

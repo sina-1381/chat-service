@@ -1,8 +1,9 @@
 package chat
 
 import (
-	"ginGorm/models"
-	"ginGorm/services"
+	"chat-service/models"
+	"chat-service/services"
+
 	"github.com/gorilla/websocket"
 )
 

@@ -1,15 +1,15 @@
 package controllers
 
 import (
-	"ginGorm/models"
-	"ginGorm/services"
-	"ginGorm/validations"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/fatih/structs"
-	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
+	"chat-service/models"
+	"chat-service/services"
+	"chat-service/validations"
 	"log"
 	"net/http"
+
+	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func Register(c *gin.Context) {
@@ -46,23 +46,11 @@ func VerifyEmail(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"token": jwtToken, "refreshToken": jwtRefreshToken})
 }
 
-func ResendEmail(c *gin.Context) {
-	var email validations.ResetPassword
-	validations.CheckValidate(&email, c)
-	token := services.RandStringBytes(32)
-	services.CacheRun(token, email.Email)
-	services.TemplateEmailSender("/verify/email", token, email.Email)
-	c.JSON(http.StatusOK, map[string]string{
-		"status": "check your email",
-	})
-
-}
-
 func Login(c *gin.Context) {
 	var validateUser validations.Login
 	var user models.User
 	validations.CheckValidate(&validateUser, c)
-	r := models.DB.Model(user).Where("email=?", validateUser.Email).Where("status=?", true).Scan(&user)
+	r := models.DB.Model(user).Where("email=?", validateUser.Email).Scan(&user)
 	if r.RowsAffected != 0 {
 		err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(validateUser.Password))
 		if err != nil {
@@ -75,27 +63,23 @@ func Login(c *gin.Context) {
 		}
 	} else {
 		c.JSON(http.StatusForbidden, map[string]string{
-			"error": "this email does not exist or its not verified",
+			"error": "this email does not exist",
 		})
 	}
 }
 
 func Profile(c *gin.Context) {
-	var profile validations.Profile
-	var userResponse models.UserResponse
-	var userModel models.User
-	validations.CheckValidate(&profile, c)
-	userId := c.MustGet("user").(jwt.MapClaims)["User"].(map[string]interface{})["id"]
-	r := models.DB.Model(&userModel).Where("id = ?", userId).Updates(structs.New(profile).Map())
-	r.First(&userResponse)
-	c.JSON(200, gin.H{"data": userResponse})
+	var user models.User
+	userId := c.MustGet("user").(jwt.MapClaims)["User"].(map[string]interface{})["ID"]
+	models.DB.Model(user).Where("id=?", userId).Scan(&user)
+	c.JSON(200, gin.H{"data": user})
 }
 
 func ChangePassword(c *gin.Context) {
 	var user models.User
 	var password validations.ChangePassword
 	validations.CheckValidate(&password, c)
-	userId := c.MustGet("user").(jwt.MapClaims)["User"].(map[string]interface{})["id"]
+	userId := c.MustGet("user").(jwt.MapClaims)["User"].(map[string]interface{})["ID"]
 	query := models.DB.Model(&user).Where("id = ?", userId).First(&user)
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password.OldPassword))
 	if err != nil {

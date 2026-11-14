@@ -1,21 +1,25 @@
 package main
 
 import (
-	"ginGorm/chat"
-	"ginGorm/controllers"
-	"ginGorm/middlewares"
-	"github.com/gin-gonic/gin"
+	"chat-service/chat"
+	"chat-service/controllers"
+	"chat-service/middlewares"
+	"chat-service/models"
 	"os"
+
+	"github.com/Kamva/mgm"
+	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func main() {
 	r := gin.Default()
+	r.SetTrustedProxies(nil)
 	r.LoadHTMLGlob("templates/*")
 	ch := chat.NewSession()
 	go ch.Run()
-	r.POST("/fcm", controllers.Fcm)
 	r.POST("/refresh/token", controllers.RefreshToken)
-	r.POST("/resend/email", controllers.ResendEmail)
 	r.GET("/verify/email/:token", controllers.VerifyEmail)
 	r.POST("/reset/password", controllers.ResetPassword)
 	r.POST("/verify/password", controllers.VerifyPassword)
@@ -24,7 +28,7 @@ func main() {
 	userGroup := r.Group("/user")
 	userGroup.Use(middlewares.AuthorizeJWT())
 	{
-		userGroup.POST("/profile", controllers.Profile)
+		userGroup.GET("/profile", controllers.Profile)
 		userGroup.POST("/change/password", controllers.ChangePassword)
 	}
 	wsGroup := r.Group("/ws")
@@ -41,4 +45,20 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func init() {
+	err := godotenv.Load(".env")
+	if err != nil {
+		panic(err)
+	}
+	gin.SetMode(os.Getenv("GIN_MODE"))
+
+	err = mgm.SetDefaultConfig(nil, os.Getenv("MONGO_DBNAME"), options.Client().
+		ApplyURI("mongodb://"+os.Getenv("MONGO_USER")+":"+os.Getenv("MONGO_PASS")+"@"+
+			os.Getenv("MONGO_HOST")+":"+os.Getenv("MONGO_PORT")))
+	if err != nil {
+		panic(err)
+	}
+	models.ConnectDataBase()
 }

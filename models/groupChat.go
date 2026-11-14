@@ -4,7 +4,7 @@ import "time"
 
 type GroupChat struct {
 	ID        int     `gorm:"primary_key"`
-	Title     string  `json:"title"  gorm:"unique"  binding:"required,uniq=group_chats.title"`
+	Title     string  `json:"title"  gorm:"unique"  binding:"required"`
 	Users     []*User `gorm:"many2many:user_groups;"`
 	CreatedAt time.Time
 	UpdatedAt time.Time

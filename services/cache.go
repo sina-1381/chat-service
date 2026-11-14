@@ -3,10 +3,11 @@ package services
 import (
 	"context"
 	"fmt"
-	"github.com/go-redis/cache"
-	"github.com/go-redis/redis"
 	"os"
 	"time"
+
+	"github.com/go-redis/cache/v8"
+	"github.com/go-redis/redis/v8"
 )
 
 func CacheRun(key string, value interface{}) {

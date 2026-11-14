@@ -1,13 +1,14 @@
 package validations
 
 import (
+	"chat-service/models"
 	"errors"
 	"fmt"
-	"ginGorm/models"
-	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator"
 	"net/http"
 	"strings"
+
+	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator"
 )
 
 var Uniq validator.Func = func(fl validator.FieldLevel) bool {

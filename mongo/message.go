@@ -1,6 +1,6 @@
 package mongo
 
-import "github.com/kamva/mgm"
+import "github.com/Kamva/mgm"
 
 type Message struct {
 	mgm.DefaultModel `bson:",inline"`
