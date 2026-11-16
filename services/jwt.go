@@ -9,15 +9,19 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
+// jwt methods
 type JWTService interface {
 	GenerateToken(user models.User) (string, string)
 	ValidateToken(tokenString string) (*jwt.Token, error)
 }
+
+// data stored in the jwt token
 type jwtCustomClaims struct {
 	User models.User
 	jwt.StandardClaims
 }
 
+// data stored in jwt refresh token (only id not all user info)
 type jwtCustomClaimsRefreshToken struct {
 	Id int
 	jwt.StandardClaims
@@ -34,6 +38,8 @@ func NewJwtService() JWTService {
 		Issuer:    "pragmaticreviews.com",
 	}
 }
+
+// sets a default jwt secret if .env file JWT_SECRET key is empty for testing
 func getSecretKey() string {
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
@@ -41,7 +47,11 @@ func getSecretKey() string {
 	}
 	return secret
 }
+
+// token generation method
 func (jwtSrv *jwtService) GenerateToken(user models.User) (string, string) {
+
+	// both token and refresh token get created with their data
 	claimsToken := &jwtCustomClaims{
 		user,
 		jwt.StandardClaims{
@@ -61,6 +71,7 @@ func (jwtSrv *jwtService) GenerateToken(user models.User) (string, string) {
 		},
 	}
 
+	// both tokens gets signed here with projects secret key before return
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claimsToken)
 	secretToken, err := token.SignedString([]byte(jwtSrv.SecretKey))
 	if err != nil {
@@ -73,6 +84,8 @@ func (jwtSrv *jwtService) GenerateToken(user models.User) (string, string) {
 	}
 	return secretToken, secretRefreshToken
 }
+
+// token validation method used in the jwt authorization middleware
 func (jwtSrv *jwtService) ValidateToken(tokenString string) (*jwt.Token, error) {
 	return jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

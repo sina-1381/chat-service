@@ -19,11 +19,11 @@ type SetEmail struct {
 	Massage string
 }
 
-func (s *smtpServer) Address() string {
+func (s *smtpServer) Address() string { // returns smtp server address
 	return s.host + ":" + s.port
 }
 
-func (s *SetEmail) SendEmail() {
+func (s *SetEmail) SendEmail() { // email send function
 	from := os.Getenv("EMAIL_FROM")
 	password := os.Getenv("EMAIL_PASS")
 	to := s.To
@@ -42,7 +42,7 @@ func (s *SetEmail) SendEmail() {
 	fmt.Println("Email Sent!")
 }
 
-func TemplateEmailSender(url, token, input string) {
+func TemplateEmailSender(url, token, input string) { // template email send function
 	var tpl bytes.Buffer
 	template := template.Must(template.ParseFiles("templates/emailResetPassword.tmpl"))
 	params := map[string]interface{}{
