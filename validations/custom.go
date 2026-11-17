@@ -51,8 +51,9 @@ func Simple(verr validator.ValidationErrors) map[string]string {
 	return errs
 }
 
-// this is where every validation is handled . every api in this project calls this function
-// values of the request json body are recived here and checked based on rules set in validations
+// this is where every validation is handled . every api in this project
+// calls this function values of the request json body are recived here
+// and checked based on rules set in validations
 func CheckValidate(input interface{}, c *gin.Context) {
 	if err := c.ShouldBindJSON(input); err != nil {
 		var verr validator.ValidationErrors

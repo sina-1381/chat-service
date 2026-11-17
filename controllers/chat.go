@@ -13,18 +13,25 @@ import (
 )
 
 // update message status api controller
-// this api updates message status in mongodb. message status: send, recived, read
+// this api updates message status in mongodb.
+// message status: send, recived, read
 func UpdateStatus(c *gin.Context) {
 	var input models.MessageStatus
-	validations.CheckValidate(&input, c) // validate input
 
-	// check if its a privet message or group message. they are stored in different collections
+	// validate input
+	validations.CheckValidate(&input, c)
+
+	// check if its a privet message or group message.
+	// they are stored in different collections
 	if input.Title == "" {
 		go func() {
 
-			// if privet message update status of the message in message collection with input status
-			username := c.MustGet("user").(jwt.MapClaims)["User"].(map[string]interface{})["username"]
-			_, err := mgm.Coll(&mongo.Message{}).UpdateMany(nil, bson.D{{"to", username}, {"from", input.From}}, bson.D{{"$set", bson.D{{"status", input.Status}}}})
+			// if privet message update status of the message
+			// in message collection with input status
+			username :=
+				c.MustGet("user").(jwt.MapClaims)["User"].(map[string]interface{})["username"]
+			_, err := mgm.Coll(&mongo.Message{}).UpdateMany(nil, bson.D{{"to", username},
+				{"from", input.From}}, bson.D{{"$set", bson.D{{"status", input.Status}}}})
 			if err != nil {
 				panic(err)
 			}
@@ -33,8 +40,9 @@ func UpdateStatus(c *gin.Context) {
 		go func() {
 
 			// if group message update status in group message collection with input status
-			_, err := mgm.Coll(&mongo.GroupMessage{}).UpdateMany(nil, bson.D{{"title", input.Title}, {"from", input.From}},
-				bson.D{{"$set", bson.D{{"status", input.Status}}}})
+			_, err := mgm.Coll(&mongo.GroupMessage{}).
+				UpdateMany(nil, bson.D{{"title", input.Title}, {"from", input.From}},
+					bson.D{{"$set", bson.D{{"status", input.Status}}}})
 			if err != nil {
 				panic(err)
 			}
@@ -46,14 +54,19 @@ func UpdateStatus(c *gin.Context) {
 func CreateGroup(c *gin.Context) {
 	var input models.GroupChat
 	var user models.User
-	validations.CheckValidate(&input, c) // validate and recive input
+
+	// validate and recive input
+	validations.CheckValidate(&input, c)
 
 	// get user id from jwt token
-	username := c.MustGet("user").(jwt.MapClaims)["User"].(map[string]interface{})["username"]
+	username :=
+		c.MustGet("user").(jwt.MapClaims)["User"].(map[string]interface{})["username"]
 
-	models.DB.Create(&input) // create group chat in database
+	// create group chat in database
+	models.DB.Create(&input)
 
-	models.DB.Table("users").Where("user_name = ?", username).First(&user) // get user data from db
+	// get user data from db
+	models.DB.Table("users").Where("user_name = ?", username).First(&user)
 
 	// create many2many connection between user and group chat in user_groups table
 	data := models.UserGroups{
@@ -72,7 +85,9 @@ func CreateGroup(c *gin.Context) {
 func AddUser(c *gin.Context) {
 	var input models.AddUser
 	var group models.GroupChat
-	validations.CheckValidate(&input, c) // recive and validate request body
+
+	// recive and validate request body
+	validations.CheckValidate(&input, c)
 
 	// find the input group in database
 	models.DB.Table("group_chats").Where("title = ?", input.GroupTitle).First(&group)

@@ -10,9 +10,10 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-// cache logic. this connects to redit port set in .env . inputs ket and value
-// if value is empty tries to get back the value set based on the ket input inside the cache
-// if value is not empty sets the ket value inside the cache for 1 hour
+// cache logic. this connects to redit port set in .env . inputs key
+// and value if value is empty tries to get back the value set based
+// on the ket input inside the cache if value is not empty sets the
+// ket value inside the cache for 1 hour
 func CacheRun(key string, value interface{}) {
 
 	// redis connction logic

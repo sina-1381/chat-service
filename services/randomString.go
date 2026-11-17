@@ -2,7 +2,8 @@ package services
 
 import "math/rand"
 
-// every letter in english. RandStringBytes makes a random string out of the characters in this const
+// every letter in english. RandStringBytes makes a random
+// string out of the characters in this const
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 func RandStringBytes(n int) string {

@@ -15,15 +15,26 @@ import (
 
 // websocket setup. it converts http to websocket connection
 var upgrader = websocket.Upgrader{
-	ReadBufferSize:    1024,                                       // read buffer
-	WriteBufferSize:   1024,                                       // write buffer
-	Subprotocols:      []string{"tcp"},                            // protocol tcp
-	CheckOrigin:       func(r *http.Request) bool { return true }, // disable browser origin protection
-	EnableCompression: true,                                       // compression enabled
+
+	// read buffer
+	ReadBufferSize: 1024,
+
+	// write buffer
+	WriteBufferSize: 1024,
+
+	// protocol tcp
+	Subprotocols: []string{"tcp"},
+
+	// disable browser origin protection
+	CheckOrigin: func(r *http.Request) bool { return true },
+
+	// compression enabled
+	EnableCompression: true,
 }
 
 // this is entrypoint of the websocket. it is registered as a route in main file
 func Runner(se *Session, c *gin.Context) {
+
 	// websocket connection stablished with the config set above
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
@@ -32,9 +43,11 @@ func Runner(se *Session, c *gin.Context) {
 	}
 
 	// get user username from jwt token
-	from := c.MustGet("user").(jwt.MapClaims)["User"].(map[string]interface{})["username"]
+	from :=
+		c.MustGet("user").(jwt.MapClaims)["User"].(map[string]interface{})["username"]
 
-	// creates a client for the user based on username and registers it in the websocket session channel
+	// creates a client for the user based on username and
+	// registers it in the websocket session channel
 	client := &Client{Hub: se, Conn: conn, Send: make(chan *Message), From: from}
 	client.Hub.Register <- client
 
@@ -44,10 +57,12 @@ func Runner(se *Session, c *gin.Context) {
 	go client.Read()
 }
 
-// this is the read functionality of the client that handles the messages that user recives
+// this is the read functionality of the client that handles
+// the messages that user recives
 func (c *Client) Read() {
 
-	// if this function is stopped for any reason user in going to be unregisterd from websocket session
+	// if this function is stopped for any reason user in
+	// going to be unregisterd from websocket session
 	defer func() {
 		c.Hub.UnRegister <- c
 	}()
@@ -57,9 +72,11 @@ func (c *Client) Read() {
 	for {
 		err := c.Conn.ReadJSON(&message)
 
-		// this handels unexpected errors. it eather logs them or breaks the function based on different errors
+		// this handels unexpected errors. it eather logs them
+		// or breaks the function based on different errors
 		if err != nil {
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+			if websocket.IsUnexpectedCloseError(
+				err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("error: %v", err)
 			}
 			break
@@ -76,7 +93,8 @@ func (c *Client) Read() {
 			go func() {
 
 				// store the message in mongodb messages collection
-				messages := mongo.NewMessage(message.Msg, message.To, message.From.(string), message.Type, "send")
+				messages := mongo.NewMessage(
+					message.Msg, message.To, message.From.(string), message.Type, "send")
 				err := mgm.Coll(messages).Create(messages)
 				if err != nil {
 					panic(err)
@@ -85,13 +103,16 @@ func (c *Client) Read() {
 		} else if message.Type == "group" {
 			go func() {
 
-				// if its a group message get the user ids of all users currently on this group
-				// and add them to users array of the group message collection in mongodb
+				// if its a group message get the user ids of all users
+				// currently on this group and add them to users array
+				// of the group message collection in mongodb
 				var username []string
-				models.DB.Table("group_chats").Select("users.user_name").Where("group_chats.title = ?", message.To).
+				models.DB.Table("group_chats").Select("users.user_name").
+					Where("group_chats.title = ?", message.To).
 					Joins("left join user_groups on group_chats.id = user_groups.group_chat_id").
 					Joins("left join users on user_groups.user_id = users.id").Find(&username)
-				GroupMessage := mongo.NewGroupMessage(message.Msg, message.To, "send", message.From.(string), message.Type, username)
+				GroupMessage := mongo.NewGroupMessage(
+					message.Msg, message.To, "send", message.From.(string), message.Type, username)
 				err := mgm.Coll(GroupMessage).Create(GroupMessage)
 				if err != nil {
 					panic(err)
@@ -103,7 +124,8 @@ func (c *Client) Read() {
 	}
 }
 
-// this is the write functionality of the client that handles the messages that user sends to websocket session
+// this is the write functionality of the client that
+// handles the messages that user sends to websocket session
 func (c *Client) Write() {
 
 	// on any error close this connection
@@ -112,7 +134,9 @@ func (c *Client) Write() {
 	}()
 
 	for message := range c.Send {
-		c.Conn.SetWriteDeadline(time.Now().Add(10 * time.Second)) // 10 sec time limit to write message in conn
+
+		// 10 sec time limit to write message in conn
+		c.Conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
 		err := c.Conn.WriteJSON(message)
 		if err != nil {
 			return
